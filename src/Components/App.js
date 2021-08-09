@@ -1,9 +1,14 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import contactsActions from '../redux/contacts/contactsAction';
 import ContactForm from './contactForm/ContactForm';
 import ContactList from './contactList/ContactList';
 import Filter from './filter/Filter';
+import { getFetchContacts } from '../redux/contacts/contactsOperations';
+import {
+    getContacts,
+    getLoading,
+    getError,
+  } from "../redux/contacts/contactsSelectors";
 
 class App extends Component {
     state = {
@@ -14,20 +19,24 @@ class App extends Component {
       }
 
       componentDidMount() {
-          const newContact = localStorage.getItem('contacts');
-
-          if (newContact) {
-              this.props.storageContact(JSON.parse(newContact));
-          }
+          this.props.getFetchContacts();
       }
 
-      componentDidUpdate(prevProps, prevState) {
-          const { contacts} = this.props;
+    //   componentDidMount() {
+    //       const newContact = localStorage.getItem('contacts');
 
-          if (prevProps.contacts !== contacts) {
-              localStorage.setItem('contacts', JSON.stringify(contacts));
-          }
-      }
+    //       if (newContact) {
+    //           this.props.storageContact(JSON.parse(newContact));
+    //       }
+    //   }
+
+    //   componentDidUpdate(prevProps, prevState) {
+    //       const { contacts} = this.props;
+
+    //       if (prevProps.contacts !== contacts) {
+    //           localStorage.setItem('contacts', JSON.stringify(contacts));
+    //       }
+    //   }
 
     render() {
         return (
@@ -37,6 +46,8 @@ class App extends Component {
                 <h2>Contacts</h2>
                 <Filter/>
                 <ContactList />
+                {this.props.isLoading && <h2>Loading...</h2> }
+                {this.props.isError && <h2>Error</h2> }
 
             </div>
         );
@@ -44,11 +55,13 @@ class App extends Component {
 }
 
 const mapstateToProps = state => ({
-    contacts: state.contacts.items,
+    contacts: getContacts(state),
+    isLoading: getLoading(state),
+    isError: getError(state),
 });
 
 const mapDispatchToProps = {
-    storageContact: contactsActions.storageContact,
+    getFetchContacts: getFetchContacts,
 };
 
 export default connect(mapstateToProps, mapDispatchToProps)(App);
